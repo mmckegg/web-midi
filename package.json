@@ -1,0 +1,23 @@
+{
+  "name": "web-midi",
+  "version": "0.0.0",
+  "description": "Web MIDI API stream based wrapper",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mmckegg/web-midi.git"
+  },
+  "keywords": [
+    "midi",
+    "web audio",
+    "browser"
+  ],
+  "author": "Matt McKegg",
+  "license": "MIT",
+  "dependencies": {
+
+  }
+}
