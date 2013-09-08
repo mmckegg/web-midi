@@ -1,44 +1,80 @@
 var Stream = require('stream')
 
+module.exports = function(name){
+  var stream = new Stream()
+  stream.readable = true
+  stream.writable = true
+  stream.paused = false
 
-module.exports = {
-  openInput: function(name){
-    var stream = new Stream()
-    stream.readable = true
-    stream.paused = false
+  var queue = []
 
-    getInput(name, function(err, port){
-      if (err) stream.emit('error', err)
-      port.onmessage = function(event){
-        var d = event.data
-        stream.emit('data', [d[0], d[1], d[2]])
-      }
-    })
-
-    return stream
-  },
-  openOutput: function(name){
-    var stream = new Stream()
-    stream.writable = true
-
-    var queue = []
-
-    stream.write = function(data){
-      queue.push(data)
+  getInput(name, function(err, port){
+    if (err) stream.emit('error', err)
+    port.onmessage = function(event){
+      console.log(event.receivedTime)
+      var d = event.data
+      stream.emit('data', [d[0], d[1], d[2]])
     }
+  })
 
-    getOutput(name, function(err, port){
-      if (err) stream.emit('error', err)
-      queue.forEach(function(data){
-        port.send(data)
-      })
-      stream.write = function(data){
-        port.send(data)
-      }
-    })
-
-    return stream
+  stream.write = function(data){
+    queue.push(data)
   }
+
+  getOutput(name, function(err, port){
+    if (err) stream.emit('error', err)
+    queue.forEach(function(data){
+      port.send(data)
+    })
+    stream.write = function(data){
+      port.send(data)
+      stream.emit('send', data)
+    }
+  })
+
+  return stream
+
+}
+
+module.exports.openInput = function(name){
+  var stream = new Stream()
+  stream.readable = true
+  stream.paused = false
+
+  getInput(name, function(err, port){
+    if (err) stream.emit('error', err)
+    port.onmessage = function(event){
+      console.log(event.receivedTime)
+      var d = event.data
+      stream.emit('data', [d[0], d[1], d[2]])
+    }
+  })
+
+  return stream
+}
+
+module.exports.openOutput = function(name){
+  var stream = new Stream()
+  stream.writable = true
+
+  var queue = []
+
+  stream.write = function(data){
+    queue.push(data)
+  }
+
+  getOutput(name, function(err, port){
+    if (err) stream.emit('error', err)
+    queue.forEach(function(data){
+      port.send(data)
+    })
+    stream.write = function(data){
+      port.send(data)
+      stream.emit('send', data)
+    }
+  })
+
+  return stream
 }
 
 function getInput(name, cb){
