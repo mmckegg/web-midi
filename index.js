@@ -1,6 +1,6 @@
 var Stream = require('stream')
 
-module.exports = function(name){
+module.exports = function(name, index){
   var stream = new Stream()
   stream.readable = true
   stream.writable = true
@@ -8,10 +8,9 @@ module.exports = function(name){
 
   var queue = []
 
-  getInput(name, function(err, port){
+  getInput(name, index, function(err, port){
     if (err) stream.emit('error', err)
     port.onmessage = function(event){
-      console.log(event.receivedTime)
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
     }
@@ -21,7 +20,7 @@ module.exports = function(name){
     queue.push(data)
   }
 
-  getOutput(name, function(err, port){
+  getOutput(name, index, function(err, port){
     if (err) stream.emit('error', err)
     queue.forEach(function(data){
       port.send(data)
@@ -41,7 +40,7 @@ module.exports.openInput = function(name){
   stream.readable = true
   stream.paused = false
 
-  getInput(name, function(err, port){
+  getInput(name, index, function(err, port){
     if (err) stream.emit('error', err)
     port.onmessage = function(event){
       console.log(event.receivedTime)
@@ -63,7 +62,7 @@ module.exports.openOutput = function(name){
     queue.push(data)
   }
 
-  getOutput(name, function(err, port){
+  getOutput(name, index, function(err, port){
     if (err) stream.emit('error', err)
     queue.forEach(function(data){
       port.send(data)
@@ -77,13 +76,17 @@ module.exports.openOutput = function(name){
   return stream
 }
 
-function getInput(name, cb){
+function getInput(name, index, cb){
   getMidi(function(err, midi){
     if(err)return cb&&cb(err)
     if (!midi.getInputs().some(function(input){
       if (input.name === name || input.fingerprint === name){
-        cb(null, midi.getInput(input))
-        return true
+        if (index && index > 0){
+          index -= 1
+        } else {
+          cb(null, midi.getInput(input))
+          return true
+        }
       }
     })) {
       cb('No input with specified name')
@@ -91,13 +94,17 @@ function getInput(name, cb){
   })
 }
 
-function getOutput(name, cb){
+function getOutput(name, index, cb){
   getMidi(function(err, midi){
     if(err)return cb&&cb(err)
     if (!midi.getOutputs().some(function(input){
       if (input.name === name || input.fingerprint === name){
-        cb(null, midi.getOutput(input))
-        return true
+        if (index && index > 0){
+          index -= 1
+        } else {
+          cb(null, midi.getOutput(input))
+          return true
+        }
       }
     })) {
       cb('No input with specified name')
