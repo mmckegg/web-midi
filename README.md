@@ -1,7 +1,11 @@
 web-midi
 ===
 
-This module wraps the proposed Web MIDI API (which no browsers currently implement) into a stream interface. This can be used now if you include [WebMIDIAPIShim](https://github.com/cwilso/WebMIDIAPIShim) on your html page.
+This module wraps the Web MIDI API into a stream interface. 
+
+It is currently only available in Chrome Canary requiring [#enable-experimental-web-platform-features](chrome://flags#enable-experimental-web-platform-features) and [#enable-web-midi](chrome://flags#enable-web-midi)) flags. 
+
+Can be used in older browsers if [WebMIDIAPIShim](https://github.com/cwilso/WebMIDIAPIShim) is included on your html page.
 
 ## Install
 
@@ -33,7 +37,7 @@ var anotherStream = midi.openOutput('IAC')
 inStream.pipe(anotherStream)
 ```
 
-## Or create a duplex stream
+## Or create a duplex stream (assumes input and output ports are named the same thing)
 
 ```js
 var midi = require('web-midi')

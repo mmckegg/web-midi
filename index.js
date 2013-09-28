@@ -10,10 +10,11 @@ module.exports = function(name, index){
 
   getInput(name, index, function(err, port){
     if (err) stream.emit('error', err)
-    port.onmessage = function(event){
+    port.onmidimessage = function(event){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
     }
+    stream.inputPort = port
   })
 
   stream.write = function(data){
@@ -29,6 +30,7 @@ module.exports = function(name, index){
       port.send(data)
       stream.emit('send', data)
     }
+    stream.outputPort = port
   })
 
   return stream
@@ -42,11 +44,11 @@ module.exports.openInput = function(name){
 
   getInput(name, index, function(err, port){
     if (err) stream.emit('error', err)
-    port.onmessage = function(event){
-      console.log(event.receivedTime)
+    port.onmidimessage = function(event){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
     }
+    stream.inputPort = port
   })
 
   return stream
@@ -71,6 +73,7 @@ module.exports.openOutput = function(name){
       port.send(data)
       stream.emit('send', data)
     }
+    stream.outputPort = port
   })
 
   return stream
@@ -79,12 +82,12 @@ module.exports.openOutput = function(name){
 function getInput(name, index, cb){
   getMidi(function(err, midi){
     if(err)return cb&&cb(err)
-    if (!midi.getInputs().some(function(input){
-      if (input.name === name || input.fingerprint === name){
+    if (!midi.inputs().some(function(input){
+      if (input.name === name || input.id === name){
         if (index && index > 0){
           index -= 1
         } else {
-          cb(null, midi.getInput(input))
+          cb(null, input)
           return true
         }
       }
@@ -97,17 +100,17 @@ function getInput(name, index, cb){
 function getOutput(name, index, cb){
   getMidi(function(err, midi){
     if(err)return cb&&cb(err)
-    if (!midi.getOutputs().some(function(input){
-      if (input.name === name || input.fingerprint === name){
+    if (!midi.outputs().some(function(output){
+      if (output.name === name || output.id === name){
         if (index && index > 0){
           index -= 1
         } else {
-          cb(null, midi.getOutput(input))
+          cb(null, output)
           return true
         }
       }
     })) {
-      cb('No input with specified name')
+      cb('No output with specified name')
     }
   })
 }
@@ -117,9 +120,9 @@ function getMidi(cb){
   if (midi){
     cb(null, midi)
   } else {
-    window.navigator.requestMIDIAccess(function(res){
+    window.navigator.requestMIDIAccess().then(function(res){
       midi = res
       cb(null, midi)
-    })
+    }, cb)
   }
 }
