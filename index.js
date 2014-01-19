@@ -9,7 +9,7 @@ module.exports = function(name, index){
   var queue = []
 
   getInput(name, index, function(err, port){
-    if (err) stream.emit('error', err)
+    if (err) return stream.emit('error', err)
     port.onmidimessage = function(event){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
@@ -22,7 +22,7 @@ module.exports = function(name, index){
   }
 
   getOutput(name, index, function(err, port){
-    if (err) stream.emit('error', err)
+    if (err) return stream.emit('error', err)
     queue.forEach(function(data){
       port.send(data)
     })
@@ -92,7 +92,7 @@ function getInput(name, index, cb){
         }
       }
     })) {
-      cb('No input with specified name')
+      cb('No input with specified name "' + name + '"')
     }
   })
 }
