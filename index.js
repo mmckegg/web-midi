@@ -119,10 +119,14 @@ var midi = null
 function getMidi(cb){
   if (midi){
     cb(null, midi)
-  } else {
+  } else if (window.navigator.requestMIDIAccess) {
     window.navigator.requestMIDIAccess().then(function(res){
       midi = res
       cb(null, midi)
     }, cb)
+  } else {
+    process.nextTick(function(){
+      cb('Web MIDI API not available')
+    })
   }
 }
