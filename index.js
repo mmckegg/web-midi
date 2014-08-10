@@ -118,7 +118,9 @@ function getOutput(name, index, cb){
 var midi = null
 function getMidi(cb){
   if (midi){
-    cb(null, midi)
+    process.nextTick(function(){
+      cb(null, midi)
+    })
   } else if (window.navigator.requestMIDIAccess) {
     window.navigator.requestMIDIAccess().then(function(res){
       midi = res
