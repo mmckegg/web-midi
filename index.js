@@ -10,6 +10,7 @@ module.exports = function(name, index){
 
   getInput(name, index, function(err, port){
     if (err) return stream.emit('error', err)
+    stream.emit('connect')
     port.onmidimessage = function(event){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
@@ -44,6 +45,7 @@ module.exports.openInput = function(name){
 
   getInput(name, index, function(err, port){
     if (err) stream.emit('error', err)
+    stream.emit('connect')
     port.onmidimessage = function(event){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
@@ -66,6 +68,7 @@ module.exports.openOutput = function(name){
 
   getOutput(name, index, function(err, port){
     if (err) stream.emit('error', err)
+    stream.emit('connect')
     queue.forEach(function(data){
       port.send(data)
     })
