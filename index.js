@@ -15,11 +15,21 @@ module.exports = function(name, index){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
     }
+    stream.on('end', function(){
+      port.onmidimessage = null
+    })
     stream.inputPort = port
   })
 
   stream.write = function(data){
     queue.push(data)
+  }
+
+  stream.close = function(){
+    stream.emit('close')
+    stream.emit('end')
+    stream.emit('finish')
+    stream.removeAllListeners()
   }
 
   getOutput(name, index, function(err, port){
@@ -50,8 +60,18 @@ module.exports.openInput = function(name){
       var d = event.data
       stream.emit('data', [d[0], d[1], d[2]])
     }
+    stream.on('end', function(){
+      port.onmidimessage = null
+    })
     stream.inputPort = port
   })
+
+  stream.close = function(){
+    stream.emit('close')
+    stream.emit('end')
+    stream.emit('finish')
+    stream.removeAllListeners()
+  }
 
   return stream
 }
@@ -64,6 +84,13 @@ module.exports.openOutput = function(name){
 
   stream.write = function(data){
     queue.push(data)
+  }
+
+  stream.close = function(){
+    stream.emit('close')
+    stream.emit('end')
+    stream.emit('finish')
+    stream.removeAllListeners()
   }
 
   getOutput(name, index, function(err, port){
