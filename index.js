@@ -1,4 +1,5 @@
 var Stream = require('stream')
+var splitter = /^(.+)\/([0-9]+)$/
 
 module.exports = function(name, index){
   var stream = new Stream()
@@ -7,6 +8,15 @@ module.exports = function(name, index){
   stream.paused = false
 
   var queue = []
+
+  // handle index in name specified by `/2`
+  if (index == null){
+    var parts = splitter.exec(name)
+    if (parts && parts[2]){
+      name = parts[1].trim()
+      index = parseInt(parts[2])
+    }
+  }
 
   getInput(name, index, function(err, port){
     if (err) return stream.emit('error', err)
@@ -74,6 +84,38 @@ module.exports.openInput = function(name){
   }
 
   return stream
+}
+
+module.exports.getPortNames = function(cb){
+  var used = {}
+  var names = {}
+  getMidi(function(err, midi){
+    if (err) return cb&&cb(err)
+      try {
+        midi.inputs().forEach(function(input){
+          if (used[input.name]){
+            var i = used[input.name] += 1
+            names[input.name + '/' + i] = true
+          } else {
+            used[input.name] = 1
+            names[input.name] = true
+          }
+        })
+        used = {}
+        midi.outputs().forEach(function(output){
+          if (used[output.name]){
+            var i = used[output.name] += 1
+            names[output.name + '/' + i] = true
+          } else {
+            used[output.name] = 1
+            names[output.name] = true
+          }
+        })
+        cb&&cb(null, Object.keys(names))
+      } catch (ex){
+        cb&&cb(ex)
+      }
+  })
 }
 
 module.exports.openOutput = function(name){
