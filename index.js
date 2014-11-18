@@ -92,7 +92,7 @@ module.exports.getPortNames = function(cb){
   getMidi(function(err, midi){
     if (err) return cb&&cb(err)
       try {
-        midi.inputs().forEach(function(input){
+        inputsOf(midi).forEach(function(input){
           if (used[input.name]){
             var i = used[input.name] += 1
             names[input.name + '/' + i] = true
@@ -102,7 +102,7 @@ module.exports.getPortNames = function(cb){
           }
         })
         used = {}
-        midi.outputs().forEach(function(output){
+        outputsOf(midi).forEach(function(output){
           if (used[output.name]){
             var i = used[output.name] += 1
             names[output.name + '/' + i] = true
@@ -154,7 +154,7 @@ module.exports.openOutput = function(name){
 function getInput(name, index, cb){
   getMidi(function(err, midi){
     if(err)return cb&&cb(err)
-    if (!midi.inputs().some(function(input){
+    if (!inputsOf(midi).some(function(input){
       if (input.name === name || input.id === name){
         if (index && index > 0){
           index -= 1
@@ -172,7 +172,7 @@ function getInput(name, index, cb){
 function getOutput(name, index, cb){
   getMidi(function(err, midi){
     if(err)return cb&&cb(err)
-    if (!midi.outputs().some(function(output){
+    if (!outputsOf(midi).some(function(output){
       if (output.name === name || output.id === name){
         if (index && index > 0){
           index -= 1
@@ -185,6 +185,35 @@ function getOutput(name, index, cb){
       cb('No output with specified name')
     }
   })
+}
+
+function outputsOf(obj){
+  if (typeof obj.outputs === 'function'){
+    return obj.outputs()
+  } else {
+    var result = []
+    if (obj.outputs && typeof obj.outputs.values === 'function') {
+      for (var val of obj.outputs.values()){
+        result.push(val)
+      }
+    }
+    return result
+  }
+}
+
+
+function inputsOf(obj){
+  if (typeof obj.inputs === 'function'){
+    return obj.inputs()
+  } else {
+    var result = []
+    if (obj.inputs && typeof obj.inputs.values === 'function') {
+      for (var val of obj.inputs.values()){
+        result.push(val)
+      }
+    }
+    return result
+  }
 }
 
 var midi = null
