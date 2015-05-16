@@ -92,26 +92,7 @@ module.exports.getPortNames = function(cb){
   getMidi(function(err, midi){
     if (err) return cb&&cb(err)
       try {
-        inputsOf(midi).forEach(function(input){
-          if (used[input.name]){
-            var i = used[input.name] += 1
-            names[input.name + '/' + i] = true
-          } else {
-            used[input.name] = 1
-            names[input.name] = true
-          }
-        })
-        used = {}
-        outputsOf(midi).forEach(function(output){
-          if (used[output.name]){
-            var i = used[output.name] += 1
-            names[output.name + '/' + i] = true
-          } else {
-            used[output.name] = 1
-            names[output.name] = true
-          }
-        })
-        cb&&cb(null, Object.keys(names))
+        cb&&cb(null, getPortNames(midi))
       } catch (ex){
         cb&&cb(ex)
       }
@@ -149,6 +130,34 @@ module.exports.openOutput = function(name){
   })
 
   return stream
+}
+
+module.exports.watchPortNames = function(listener) {
+  var midi = null
+  var refreshing = false
+
+  getMidi(function(err, m){
+    if (!err) {
+      midi = m
+      midi.addEventListener('statechange', handleEvent) 
+    }
+  })
+
+  return function unwatch() {
+    if (midi) {
+      midi.removeEventListener('statechange', handleEvent)
+    }
+  }
+
+  function handleEvent(e) {
+    if (!refreshing) {
+      refreshing = true
+      setTimeout(function() {
+        listener(getPortNames(midi))
+        refreshing = false
+      }, 5)
+    }
+  }
 }
 
 function getInput(name, index, cb){
@@ -232,4 +241,29 @@ function getMidi(cb){
       cb('Web MIDI API not available')
     })
   }
+}
+
+function getPortNames(midi) {
+  var used = {}
+  var names = {}
+  inputsOf(midi).forEach(function(input){
+    if (used[input.name]){
+      var i = used[input.name] += 1
+      names[input.name + '/' + i] = true
+    } else {
+      used[input.name] = 1
+      names[input.name] = true
+    }
+  })
+  used = {}
+  outputsOf(midi).forEach(function(output){
+    if (used[output.name]){
+      var i = used[output.name] += 1
+      names[output.name + '/' + i] = true
+    } else {
+      used[output.name] = 1
+      names[output.name] = true
+    }
+  })
+  return Object.keys(names)
 }
