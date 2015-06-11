@@ -3,9 +3,7 @@ web-midi
 
 This module wraps the [Web MIDI API](http://www.w3.org/TR/webmidi/) into a stream interface. 
 
-It is currently only implemented in Chrome requiring the [#enable-web-midi](chrome://flags#enable-web-midi)) flag. 
-
-Can potentially be used in older browsers with the [WebMIDIAPIShim](https://github.com/cwilso/WebMIDIAPIShim).
+Web MIDI is currently only available in Chrome, but this module can potentially be used in older browsers with the [WebMIDIAPIShim](https://github.com/cwilso/WebMIDIAPIShim).
 
 For a serverside (Node) based version of the same API check out [midi-stream](https://github.com/mmckegg/midi-stream).
 
