@@ -14,7 +14,7 @@ module.exports = function(name, index){
     var parts = splitter.exec(name)
     if (parts && parts[2]){
       name = parts[1].trim()
-      index = parseInt(parts[2])
+      index = parseInt(parts[2])-1
     }
   }
 
