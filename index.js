@@ -1,7 +1,9 @@
 var Stream = require('stream')
 var splitter = /^(.+)\/([0-9]+)$/
 
-module.exports = function(name, index){
+module.exports = function(name, opts){
+  opts = normalizeOpts(opts)
+
   var stream = new Stream()
   stream.readable = true
   stream.writable = true
@@ -10,6 +12,7 @@ module.exports = function(name, index){
   var queue = []
 
   // handle index in name specified by `/2`
+  var index = opts.index
   if (index == null){
     var parts = splitter.exec(name)
     if (parts && parts[2]){
@@ -23,6 +26,9 @@ module.exports = function(name, index){
     stream.emit('connect')
     port.onmidimessage = function(event){
       var d = event.data
+      if (opts.normalizeNotes) {
+        d = normalizeNotes(d)
+      }
       stream.emit('data', [d[0], d[1], d[2]])
     }
     stream.on('end', function(){
@@ -58,7 +64,19 @@ module.exports = function(name, index){
 
 }
 
-module.exports.openInput = function(name){
+module.exports.openInput = function(name, opts){
+  opts = normalizeOpts(opts)
+
+  // handle index in name specified by `/2`
+  var index = opts.index
+  if (index == null){
+    var parts = splitter.exec(name)
+    if (parts && parts[2]){
+      name = parts[1].trim()
+      index = parseInt(parts[2])-1
+    }
+  }
+
   var stream = new Stream()
   stream.readable = true
   stream.paused = false
@@ -68,6 +86,9 @@ module.exports.openInput = function(name){
     stream.emit('connect')
     port.onmidimessage = function(event){
       var d = event.data
+      if (opts.normalizeNotes) {
+        d = normalizeNotes(d)
+      }
       stream.emit('data', [d[0], d[1], d[2]])
     }
     stream.on('end', function(){
@@ -99,7 +120,19 @@ module.exports.getPortNames = function(cb){
   })
 }
 
-module.exports.openOutput = function(name){
+module.exports.openOutput = function(name, opts){
+  opts = normalizeOpts(opts)
+
+  // handle index in name specified by `/2`
+  var index = opts.index
+  if (index == null){
+    var parts = splitter.exec(name)
+    if (parts && parts[2]){
+      name = parts[1].trim()
+      index = parseInt(parts[2])-1
+    }
+  }
+
   var stream = new Stream()
   stream.writable = true
 
@@ -266,4 +299,18 @@ function getPortNames(midi) {
     }
   })
   return Object.keys(names)
+}
+
+function normalizeNotes(data) {
+  if (data[0] >= 128 && data[0] < 128 + 16){
+    // convert note off events to 0 velocity note on events
+    data = [data[0]+16, data[1], 0]
+  }
+  return data
+}
+
+function normalizeOpts(opts) {
+  if (typeof opts === 'number') opts = {index: opts}
+  opts = opts || {}
+  return opts
 }
