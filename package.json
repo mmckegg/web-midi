@@ -1,6 +1,6 @@
 {
   "name": "web-midi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Web MIDI API stream based wrapper",
   "main": "index.js",
   "scripts": {
