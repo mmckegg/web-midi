@@ -140,6 +140,7 @@ module.exports.watchPortNames = function(listener) {
     if (!err) {
       midi = m
       midi.addEventListener('statechange', handleEvent) 
+      listener(getPortNames(midi))
     }
   })
 
