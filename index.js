@@ -1,5 +1,6 @@
 var Stream = require('stream')
 var splitter = /^(.+)\/([0-9]+)$/
+var midiOpts = null
 
 module.exports = function(name, opts){
   opts = normalizeOpts(opts)
@@ -172,7 +173,7 @@ module.exports.watchPortNames = function(listener) {
   getMidi(function(err, m){
     if (!err) {
       midi = m
-      midi.addEventListener('statechange', handleEvent) 
+      midi.addEventListener('statechange', handleEvent)
       listener(getPortNames(midi))
     }
   })
@@ -266,7 +267,7 @@ function getMidi(cb){
       cb(null, midi)
     })
   } else if (window.navigator.requestMIDIAccess) {
-    window.navigator.requestMIDIAccess().then(function(res){
+    window.navigator.requestMIDIAccess(midiOpts).then(function(res){
       midi = res
       cb(null, midi)
     }, cb)
@@ -313,5 +314,6 @@ function normalizeNotes(data) {
 function normalizeOpts(opts) {
   if (typeof opts === 'number') opts = {index: opts}
   opts = opts || {}
+  if (opts.sysex) midiOpts = {sysex: opts.sysex}
   return opts
 }

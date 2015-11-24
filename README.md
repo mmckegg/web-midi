@@ -60,3 +60,15 @@ setTimeout(function(){
 var anotherStream = midi('IAC')
 duplexStream.pipe(anotherStream)
 ```
+
+## For SysEx access just add the appropriate option
+Note that the browser will require user permission for this.
+```js
+var midi = require('web-midi')
+
+var duplexStream = midi('Ableton Push User Port', {sysex: true})
+
+// Write 'Hi' on Ableton Push display
+duplexStream.write([0xF0, 0x47, 0x7F, 0x15, 0x18, 0x00, 0x45, 0x00, 0x48, 0x69, 0xF7])
+
+```
