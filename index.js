@@ -1,6 +1,6 @@
 var Stream = require('stream')
 var splitter = /^(.+)\/([0-9]+)$/
-var midiOpts = null
+var midiOpts = { sysex: true }
 
 module.exports = function(name, opts){
   opts = normalizeOpts(opts)
@@ -314,6 +314,5 @@ function normalizeNotes(data) {
 function normalizeOpts(opts) {
   if (typeof opts === 'number') opts = {index: opts}
   opts = opts || {}
-  if (opts.sysex) midiOpts = {sysex: opts.sysex}
   return opts
 }
