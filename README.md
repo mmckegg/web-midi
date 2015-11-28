@@ -1,7 +1,7 @@
 web-midi
 ===
 
-This module wraps the [Web MIDI API](http://www.w3.org/TR/webmidi/) into a stream interface. 
+This module wraps the [Web MIDI API](http://www.w3.org/TR/webmidi/) into a stream interface.
 
 Web MIDI is currently only available in Chrome, but this module can potentially be used in older browsers with the [WebMIDIAPIShim](https://github.com/cwilso/WebMIDIAPIShim).
 
@@ -41,7 +41,6 @@ inStream.pipe(anotherStream)
 
 ```js
 var midi = require('web-midi')
-
 var duplexStream = midi('Launchpad')
 
 duplexStream.on('data', function(data){
@@ -59,16 +58,4 @@ setTimeout(function(){
 // or use pipes
 var anotherStream = midi('IAC')
 duplexStream.pipe(anotherStream)
-```
-
-## For SysEx access just add the appropriate option
-Note that the browser will require user permission for this.
-```js
-var midi = require('web-midi')
-
-var duplexStream = midi('Ableton Push User Port', {sysex: true})
-
-// Write 'Hi' on Ableton Push display
-duplexStream.write([0xF0, 0x47, 0x7F, 0x15, 0x18, 0x00, 0x45, 0x00, 0x48, 0x69, 0xF7])
-
 ```
