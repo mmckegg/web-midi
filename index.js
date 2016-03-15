@@ -55,7 +55,7 @@ module.exports = function(name, opts){
 }
 
 module.exports.openInput = function (name, opts) {
-  opts = normalizeOpts(opts)
+  opts = normalizeOpts(name, opts)
 
   var stream = new Stream()
   stream.readable = true
