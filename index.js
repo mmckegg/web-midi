@@ -133,7 +133,7 @@ module.exports.openOutput = function (name, opts) {
   return stream
 }
 
-module.exports.watchPortNames = function (listener) {
+module.exports.watchPortNames = function (listener, opts) {
   var midi = null
   var refreshing = false
 
@@ -141,7 +141,7 @@ module.exports.watchPortNames = function (listener) {
     if (!err) {
       midi = m
       midi.addEventListener('statechange', handleEvent)
-      listener(getPortNames(midi))
+      listener(getPortNames(midi, opts))
     }
   })
 
@@ -155,7 +155,7 @@ module.exports.watchPortNames = function (listener) {
     if (!refreshing) {
       refreshing = true
       setTimeout(function () {
-        listener(getPortNames(midi))
+        listener(getPortNames(midi, opts))
         refreshing = false
       }, 5)
     }
@@ -230,45 +230,71 @@ function inputsOf (obj) {
 }
 
 var midi = null
+var loadCallbacks = []
+var loading = false
+var midiError = null
+
 function getMidi (cb) {
-  if (midi) {
-    process.nextTick(function(){
-      cb(null, midi)
+  if (midi || midiError) {
+    process.nextTick(function () {
+      cb(midiError, midi)
     })
   } else if (window.navigator.requestMIDIAccess) {
-    window.navigator.requestMIDIAccess(midiOpts).then(function (res) {
-      midi = res
-      cb(null, midi)
-    }, cb)
+    loadCallbacks.push(cb)
+    if (!loading) {
+      loading = true
+      window.navigator.requestMIDIAccess(midiOpts).then(function (res) {
+        midi = res
+        gotMidi()
+      }, gotMidi)
+    }
   } else {
     process.nextTick(function () {
-      cb('Web MIDI API not available')
+      cb(new Error('Web MIDI API not available'))
     })
   }
 }
 
-function getPortNames (midi) {
+function gotMidi (err) {
+  midiError = err
+  loading = false
+  while (loadCallbacks.length) {
+    loadCallbacks.shift()(err, midi)
+  }
+}
+
+function getPortNames (midi, opts) {
+  var includeInputs = !opts || opts.inputs
+  var includeOutputs = !opts || opts.outputs
+
   var used = {}
   var names = {}
-  inputsOf(midi).forEach(function (input) {
-    if (used[input.name]) {
-      var i = used[input.name] += 1
-      names[input.name + '/' + i] = true
-    } else {
-      used[input.name] = 1
-      names[input.name] = true
-    }
-  })
+  if (includeInputs) {
+    inputsOf(midi).forEach(function (input) {
+      if (used[input.name]) {
+        var i = used[input.name] += 1
+        names[input.name + '/' + i] = true
+      } else {
+        used[input.name] = 1
+        names[input.name] = true
+      }
+    })
+  }
+
   used = {}
-  outputsOf(midi).forEach(function (output) {
-    if (used[output.name]) {
-      var i = used[output.name] += 1
-      names[output.name + '/' + i] = true
-    } else {
-      used[output.name] = 1
-      names[output.name] = true
-    }
-  })
+
+  if (includeOutputs) {
+    outputsOf(midi).forEach(function (output) {
+      if (used[output.name]) {
+        var i = used[output.name] += 1
+        names[output.name + '/' + i] = true
+      } else {
+        used[output.name] = 1
+        names[output.name] = true
+      }
+    })
+  }
+
   return Object.keys(names)
 }
 
