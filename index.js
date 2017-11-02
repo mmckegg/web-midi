@@ -44,8 +44,8 @@ module.exports = function(name, opts){
     queue.forEach(function (data) {
       port.send(data)
     })
-    stream.write = function (data) {
-      port.send(data)
+    stream.write = function (data, timestamp) {
+      port.send(data, timestamp)
       stream.emit('send', data)
     }
     stream.outputPort = port
@@ -123,8 +123,8 @@ module.exports.openOutput = function (name, opts) {
     queue.forEach(function (data) {
       port.send(data)
     })
-    stream.write = function (data) {
-      port.send(data)
+    stream.write = function (data, timestamp) {
+      port.send(data, timestamp)
       stream.emit('send', data)
     }
     stream.outputPort = port
